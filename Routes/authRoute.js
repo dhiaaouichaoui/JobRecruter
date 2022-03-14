@@ -12,7 +12,11 @@ route.get("/login", authController.login);
   passport.authenticate("jwt", { session: false }),
   authController.profil
 );  */
-
+route.get(
+  "/refrechtoken",
+  passport.authenticate("jwt", { session: false }),
+  authentificationcontroller.RefrechToken
+);
 // partie admin
 
 route.post("/registeradmin", authController.registerAdmin);
