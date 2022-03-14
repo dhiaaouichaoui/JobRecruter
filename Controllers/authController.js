@@ -6,13 +6,13 @@ const { join } = require("path");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 
-const DOMAIN = process.env.APP_DOMAIN;
 const SECRET = process.env.APP_SECRET;
 
 const transporteur = nodemailer.createTransport({
   service: "gmail",
   auth: { user: process.env.APP_USER, pass: process.env.APP_PASS },
 });
+var RefrechTokens = [];
 
 const registerAdmin = async (req, res) => {
   try {
@@ -50,6 +50,33 @@ const register = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const RefrechToken = async (req, res) => {
+  try {
+    const refrechToken = req.body.refrechToken;
+    // console.log("ghfgd");
+    if (refrechToken in RefrechTokens) {
+      const token = jwt.sign({ id: req.user._id }, SECRET, { expiresIn: "7h" });
+      const refrechtoken = jwt.sign({ id: req.user._id }, SECRET, {
+        expiresIn: "24h",
+      });
+      RefrechTokens[refrechtoken] = req.user._id;
+      res.status(200).json({
+        accesstoken: token,
+        refrechToken: refrechToken,
+      });
+    } else {
+      res.status(404).json({
+        status: 404,
+        message: "refresh token not existe",
+      });
+    }
+  } catch (error) {
+    res.status(404).json({
+      status: 404,
+      message: error.message,
+    });
+  }
+};
 
 const login = async (req, res) => {
   try {
@@ -67,11 +94,16 @@ const login = async (req, res) => {
       const token = jwt.sign({ id: user._id, user: user }, SECRET, {
         expiresIn: "24h",
       });
+      const refrechtoken = jwt.sign({ id: user._id }, SECRET, {
+        expiresIn: "24h",
+      });
+      RefrechTokens[refrechtoken] = user._id;
       const result = {
         Email: user.email,
         User: user,
         Token: token,
         ExpiresIn: 1,
+        refrechtoken: refrechtoken,
       };
       res.status(200).json({ message: user.name + " is logged", ...result });
     }
@@ -134,6 +166,51 @@ const confirmedUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const forgetpassword = async (req, res) => {
+  try {
+    const user = await Client.findOne({ email: req.body.email });
+    console.log(user);
+    if (!user) {
+      return res.status(500).json({ message: "Your email does not exist" });
+    }
+    const token = jwt.sign({ id: user._id }, SECRET, {
+      expiresIn: "2h",
+    });
+    console.log("resettttt :", token);
+    transporteur.sendMail(
+      {
+        to: user.email,
+        subject: "Forget Password",
+        text: "Bonjour MR",
+        html: `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Welcome Email</title>
+        </head>
+        <body>
+            <h2>
+                Hello ${user.firstname}
+            </h2>
+            <p>We are glad to have you on bord at ${user.email}</p>
+            <a href="${DOMAIN}/resetpassword/${token}">Reset Password</a>
+        </body>
+        </html>`,
+      },
+      //fonction pour afficher msg lors de la creation de client lors de lenvoi du email
+      function (err, info) {
+        if (err) {
+          console.log("error : " + err.message);
+        } else {
+          console.log("email send : " + info.res);
+        }
+      }
+    );
+    return res.status(200).json({ message: "email send" });
+  } catch (error) {}
+};
 
 
-module.exports = { registerAdmin, register, login, profil, confirmedUser };
+module.exports = { registerAdmin, register, login, profil, confirmedUser,forgetpassword,RefrechToken };
