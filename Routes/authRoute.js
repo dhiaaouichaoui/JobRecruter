@@ -1,37 +1,18 @@
 const route = require("express").Router();
-const authController = require("../Controllers/authController");
-const uploadImage = require("../Middelwares/uploadImage");
-const passport = require("passport");
-require("../Middelwares/passport").passport;
+const AuthController = require("../Controllers/AuthController");
+const upload = require('../Middelwares/uploadImage');
+const check_auth = require("../Middelwares/check_authentification");
+const passport = require('passport');
+require('../Middelwares/passport_authentification').passport;
 
-route.post("/register", uploadImage.single("image"), authController.register);
-route.get("/login", authController.login);
+route.post("/registreadmin", AuthController.registreAdmin);
+route.post("/registrecandidat",AuthController.registrecandidat);
+route.post("/registreentreprise2",upload.single("photo"),AuthController.registreentreprise2);
+route.get("/verify-now/:verificationcode", AuthController.verifyemail);
+route.post("/login", AuthController.login);
+route.get('/profile', passport.authenticate('jwt', { session: false }),AuthController.profile);
+route.put('/profileUpdate',passport.authenticate('jwt',{ session: false}),AuthController.updateProfile);
 
-/* route.get(
-  "/profil",
-  passport.authenticate("jwt", { session: false }),
-  authController.profil
-);  */
-route.get(
-  "/refrechtoken",
-  passport.authenticate("jwt", { session: false }),
-  authentificationcontroller.RefrechToken
-);
-// partie admin
 
-route.post("/registeradmin", authController.registerAdmin);
-route.get(
-  "/profil",
-  passport.authenticate("jwt", { session: false }),
-  authController.profil
-);
-
-route.put(
-  "/confirmeduser/:iduser",
-  passport.authenticate("jwt", { session: false }),
-  authController.confirmedUser
-);
-
-// 
 
 module.exports = route;

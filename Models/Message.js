@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const schemacategory = new mongoose.Schema({
-    fullname: {
+const schemamessage = new mongoose.Schema({
+    titre: {
         type: String,
         required: true,
         trim: true,
@@ -10,9 +10,14 @@ const schemacategory = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    entreprise: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Entreprise',
+        required: true
+    }
 
 
 },
     { timestamps: true }
 );
-module.exports = mongoose.model("Category", schemacategory);
+module.exports = mongoose.model("Message", schemamessage);

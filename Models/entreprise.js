@@ -1,37 +1,37 @@
 const mongoose = require("mongoose");
-
-const entrepriseSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: false,
-      unique: false,
-    },
-
-    address: {
-      type: String,
-      required: false,
-    },
-  
-      phone: {
+const User = require("./User");
+const schemaentreprise = mongoose.Schema({
+    fullname: {
         type: String,
-        required: false,
-      },
-      siteweb: {
+        minlength: 4,
+        required: true,
+        trim: true,
+    },
+    adresse: {
         type: String,
-        required: false,
-      },
-  
-  
-  
-  
-  
-  
-  
+        minlength: 4,
+        required: true,
+        trim: true,
+    },
+    specialite: {
+        type: String,
+        minlength: 4,
+        required: true,
+        trim: true,
+    },
+    siteweb: {
+        type: String,
+        minlength: 4,
+        required: true,
+        trim: true,
+    },
+    image: {
+        type: String,
+        minlength: 4,
+        required: true,
+    }
 
-   
-  }
+},
+    { timestamps: true }
 );
-
-//Export the model
-module.exports = mongoose.model("Entreprise", entrepriseSchema);
+module.exports = User.discriminator('Entreprise', schemaentreprise);
